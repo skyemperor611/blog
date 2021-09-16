@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tw.blog.mapper.BoardMapper">
+ 
+   <select id="getList" resultType="BoardVO">
+        SELECT boardid,title,username, count,date_format(a.createDate,'%Y-%m-%d %H:%i') AS createDate FROM board AS a LEFT OUTER JOIN user AS b ON a.userid = b.userid order by boardid desc
+    </select>
+    
+</mapper>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tw.blog.mapper.MemberMapper">
+ 
+   <insert id="memberJoin">
+   	INSERT INTO user(username, password, email) VALUES(#{username},#{password},#{email})
+   </insert>
+   
+    <select id="login" resultType="MemberVO">
+   	SELECT username, password from user WHERE username = #{username} AND password = #{password}
+   </select>
+   
+   <select id="usernameChk" resultType="int">
+   	SELECT count(*) from user WHERE username = #{username}
+   </select>
+   
+</mapper>
