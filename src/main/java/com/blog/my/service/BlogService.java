@@ -2,9 +2,11 @@ package com.blog.my.service;
 
 import com.blog.my.domain.Article;
 import com.blog.my.dto.AddArticleRequest;
+import com.blog.my.dto.UpdateArticleRequest;
 import com.blog.my.repository.BlogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,8 +19,25 @@ public class BlogService {
     public Article save(AddArticleRequest request){
         return blogRepository.save(request.toEntity());
     }
-
     public List<Article> findAll() {
         return blogRepository.findAll();
     }
+    public Article findByID(long id) {
+        return blogRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("not found : " + id));
+    }
+    public void delete(long id) {
+        blogRepository.deleteById(id);
+    }
+
+    @Transactional
+    public Article update(long id, UpdateArticleRequest request) {
+        Article article = blogRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("not found : " + id));
+
+        article.update(request.getTitle(), request.getContent());
+
+        return article;
+    }
+
 }
