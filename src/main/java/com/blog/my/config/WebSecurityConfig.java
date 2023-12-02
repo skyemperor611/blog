@@ -15,6 +15,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
 
@@ -27,42 +30,37 @@ public class WebSecurityConfig {
     @Bean
     public WebSecurityCustomizer configure() {
         return (web) -> web.ignoring()
-                .requestMatchers(toH2Console())
-                .requestMatchers("/static/**");
+                .requestMatchers(new AntPathRequestMatcher("/h2-console/**"))
+                .requestMatchers(new AntPathRequestMatcher( "/favicon.ico"))
+                .requestMatchers(new AntPathRequestMatcher( "/css/**"))
+                .requestMatchers(new AntPathRequestMatcher( "/js/**"))
+                .requestMatchers(new AntPathRequestMatcher( "/img/**"))
+                .requestMatchers(new AntPathRequestMatcher( "/lib/**"));
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
             http
                     .csrf((csrfConfig) ->
                             csrfConfig.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/signup", "/user").permitAll()
+                        .requestMatchers(new MvcRequestMatcher(introspector, "/login")).permitAll()
+                        .requestMatchers(new MvcRequestMatcher(introspector, "/signup")).permitAll()
+                        .requestMatchers(new MvcRequestMatcher(introspector, "/user")).permitAll()
                         .anyRequest().authenticated())
-                .formLogin((formLogin) -> formLogin
+                .formLogin((formLogin) ->
+                        formLogin
                         .loginPage("/login")
-                        .defaultSuccessUrl("/", true))
+                        .failureUrl("/authentication/login?failed")
+                        .loginProcessingUrl("/login")
+                        .usernameParameter("username")
+                        .passwordParameter("password")
+                        .defaultSuccessUrl("/articles", true))
                 .logout((logOutConfig) ->
                         logOutConfig.logoutSuccessUrl("/login"));
 
             return http.build();
     }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails user = User.builder()
-                .username("user")
-                .password(passwordEncoder().encode("password"))
-                .roles("USER")
-                .build();
-        UserDetails admin = User.builder()
-                .username("admin")
-                .password(passwordEncoder().encode("password"))
-                .roles("ADMIN", "USER")
-                .build();
-        return new InMemoryUserDetailsManager(user, admin);
-    }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {

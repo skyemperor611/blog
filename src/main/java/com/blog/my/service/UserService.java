@@ -5,6 +5,7 @@ import com.blog.my.dto.AddUserRequests;
 import com.blog.my.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -12,12 +13,11 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
-
+    private final PasswordEncoder passwordEncoder;
     public Long save(AddUserRequests dto) {
         return userRepository.save(User.builder()
                 .email(dto.getEmail())
-                .password(bCryptPasswordEncoder.encode(dto.getPassword())
+                .password(passwordEncoder.encode(dto.getPassword())
                 ).build()).getId();
     }
 }
