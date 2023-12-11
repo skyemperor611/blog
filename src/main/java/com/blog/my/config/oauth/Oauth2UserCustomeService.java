@@ -13,7 +13,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
-public class Oauth2UserCustomerService extends DefaultOAuth2UserService {
+public class Oauth2UserCustomeService extends DefaultOAuth2UserService {
     private final UserRepository userRepository;
 
     @Override

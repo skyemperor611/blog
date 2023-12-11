@@ -33,7 +33,7 @@ public class CookieUtil {
     }
 
     public static String serialize(Object obj) {
-        return Base64.getEncoder()
+        return Base64.getUrlEncoder()
                 .encodeToString(SerializationUtils.serialize(obj));
     }
 

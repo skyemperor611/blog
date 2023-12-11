@@ -1,6 +1,14 @@
 package com.blog.my.config;
 
+import com.blog.my.config.jwt.TokenProvider;
+import com.blog.my.config.oauth.OAuth2AuthorizationRequestBasedOnCookieRepository;
+import com.blog.my.config.oauth.OAuth2SuccessHandler;
+import com.blog.my.config.oauth.Oauth2UserCustomeService;
+import com.blog.my.repository.RefreshTokenRepository;
+import com.blog.my.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -13,8 +21,14 @@ import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
-public class WebOAuthsecurityConfig {
+@RequiredArgsConstructor
+@Configuration
+public class WebOAuthSecurityConfig {
 
+    private final Oauth2UserCustomeService oauth2UserCustomeService;
+    private final TokenProvider tokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final UserService userService;
     @Bean
     public WebSecurityCustomizer configure() {
         return (web) -> web.ignoring()
@@ -41,7 +55,7 @@ public class WebOAuthsecurityConfig {
                     sessionManagementConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
             http
-                    .addFilterBefore(tokenAuthenticationfilter(), UsernamePasswordAuthenticationFilter.class);
+                    .addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
             http
                         .authorizeHttpRequests(authorize -> authorize
@@ -56,11 +70,11 @@ public class WebOAuthsecurityConfig {
                                     .authorizationEndpoint((authorizationEndpointConfig ->
                                             authorizationEndpointConfig
                                                     .authorizationRequestRepository(
-                                                    oAuth2AuthorizationRequestBasedOnCookieRepository())))
+                                                            oAuth2AuthorizationRequestBasedOnCookieRepository())))
                                     .successHandler(oAuth2SuccessHandler())
                                     .userInfoEndpoint(userInfoEndpointConfig ->
                                             userInfoEndpointConfig
-                                                    .userService(oAuth2UserCustomService)));
+                                                    .userService(oauth2UserCustomeService)));
 
             http
                     .logout((logoutConfig) ->
@@ -90,8 +104,8 @@ public class WebOAuthsecurityConfig {
     }
 
     @Bean
-    public OAuth2AuthorizationBasedOnCookieRepository oAuth2AuthorizationBasedOnCookieRepository() {
-        return new OAuth2AuthorizationBasedOnCookieRepository();
+    public OAuth2AuthorizationRequestBasedOnCookieRepository oAuth2AuthorizationRequestBasedOnCookieRepository() {
+        return new OAuth2AuthorizationRequestBasedOnCookieRepository();
     }
 
     @Bean
